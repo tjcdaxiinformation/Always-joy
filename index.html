@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 加入此標籤嘗試繞過官網圖片引用限制 -->
     <meta name="referrer" content="no-referrer">
     <title>常常喜樂 - 聖靈月刊 584 期證道專題</title>
-    <!-- 引入字體：思源宋體呈現敬虔感 -->
+    <!-- 引入字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 PPT 生成庫 -->
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
     <style>
         :root {
             --joy-orange: #e67e22;
@@ -28,7 +29,6 @@
             font-family: 'Noto Serif TC', serif;
         }
 
-        /* 滾動動畫效果 */
         .reveal {
             opacity: 0;
             transform: translateY(30px);
@@ -40,7 +40,6 @@
             transform: translateY(0);
         }
 
-        /* 模擬 PPT 的每一頁 */
         .slide {
             min-height: 100vh;
             display: flex;
@@ -51,7 +50,6 @@
             position: relative;
         }
 
-        /* 引言區塊樣式 */
         .highlight-box {
             border-left: 6px solid var(--joy-orange);
             background: rgba(230, 126, 34, 0.05);
@@ -61,7 +59,6 @@
             box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
         }
 
-        /* 互動驚喜：點擊卡片翻轉 */
         .surprise-card {
             perspective: 1000px;
             cursor: pointer;
@@ -90,15 +87,6 @@
             left: 0;
         }
 
-        /* 懸浮效果 */
-        .hover-lift {
-            transition: transform 0.3s ease;
-        }
-        .hover-lift:hover {
-            transform: translateY(-10px);
-        }
-
-        /* 自定義按鈕 */
         .joy-btn {
             background-color: var(--joy-orange);
             color: white;
@@ -113,16 +101,40 @@
             transform: scale(1.05);
         }
 
-        /* 圖片網格裝飾 */
         .img-decoration {
             border: 8px solid white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             border-radius: 1rem;
-            background-color: #f3f4f6; /* 載入中背景 */
+            background-color: #f3f4f6;
+        }
+
+        /* 匯出按鈕樣式 */
+        #export-ppt-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: #8b4513;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        #export-ppt-btn:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
+
+    <!-- 匯出按鈕 -->
+    <div id="export-ppt-btn" onclick="exportToPPT()">
+        💾 匯出為 PPT
+    </div>
 
     <!-- 導航指示 -->
     <div class="fixed right-5 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
@@ -143,7 +155,6 @@
                 <button class="joy-btn" onclick="document.getElementById('intro').scrollIntoView({behavior:'smooth'})">開始證道之旅</button>
             </div>
             <div class="lg:w-1/2 relative">
-                <!-- 封面圖：小孩與蘋果 -->
                 <img src="https://joy.org.tw/upload/paper/584/584_001.jpg" 
                      onerror="this.src='https://images.unsplash.com/photo-1510337269632-ff45543666d6?auto=format&fit=crop&w=800&q=80'" 
                      alt="584期封面" class="img-decoration w-full max-w-md mx-auto transform rotate-2">
@@ -152,22 +163,18 @@
         </div>
     </section>
 
-    <!-- Slide 2: 引言 (快樂 vs 喜樂) -->
+    <!-- Slide 2: 引言 -->
     <section id="intro" class="slide">
         <div class="container mx-auto max-w-4xl px-6">
             <h2 class="text-4xl text-center text-orange-800 mb-12 reveal">從「快樂」到「喜樂」的昇華</h2>
             <div class="grid md:grid-cols-2 gap-10">
-                <div class="bg-white p-8 rounded-2xl shadow-sm hover-lift reveal">
+                <div class="bg-white p-8 rounded-2xl shadow-sm reveal">
                     <h3 class="text-2xl font-bold mb-4 text-slate-700 underline decoration-orange-400">快樂 Happiness</h3>
-                    <p class="text-slate-600 leading-relaxed">
-                        取決於「發生的事」(Happenings)。建立在物質與環境上的滿足感是極其短暫且脆弱的。
-                    </p>
+                    <p class="text-slate-600">取決於外在環境。當生活順遂時感到痛快，但這種滿足感極其短暫且脆弱。</p>
                 </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border-2 border-orange-200 hover-lift reveal">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border-2 border-orange-200 reveal">
                     <h3 class="text-2xl font-bold mb-4 text-orange-700">喜樂 Joy</h3>
-                    <p class="text-slate-600 leading-relaxed">
-                        源於神「恩典」(Charis) 的澆灌。深植於內在的屬靈力量，在不可能喜樂的絕境中依然存在。
-                    </p>
+                    <p class="text-slate-600">源於神「恩典」。深植於內在的屬靈力量，是一種源源不絕的生命力。</p>
                 </div>
             </div>
             <div class="highlight-box mt-10 reveal">
@@ -177,26 +184,20 @@
         </div>
     </section>
 
-    <!-- Slide 3: 喜樂的神學 (保羅與廣角鏡) -->
+    <!-- Slide 3: 喜樂的神學 -->
     <section id="section1" class="slide bg-slate-50">
         <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 px-6">
             <div class="md:w-1/2 reveal">
                 <h2 class="text-4xl text-orange-800 mb-8 pious-font">壹、喜樂的視角：戴上廣角鏡</h2>
                 <div class="highlight-box bg-white">
-                    <p class="text-xl italic leading-relaxed">
-                        「保羅戴上了屬靈的『廣角鏡』。從世人的角度看，傳道人被關是神沒有保護；但在保羅看來，目的是為了向羅馬最精銳的『御營全軍』傳福音！」
-                    </p>
-                    <cite class="block text-right mt-2">— 楊志豪《喜樂的神學》</cite>
+                    <p class="text-xl italic">「保羅戴上了屬靈的『廣角鏡』。他看見下監的目的，是為了向羅馬最精銳的『御營全軍』傳福音！」</p>
                 </div>
-                <p class="mt-6 text-slate-600">
-                    抱怨一開口，喜樂就溜走；感恩一發聲，喜樂就降臨。當視角一改變，心情自然豁然開朗。
-                </p>
+                <p class="mt-6 text-slate-600">抱怨一開口，喜樂就溜走；感恩一發聲，喜樂就降臨。</p>
             </div>
             <div class="md:w-1/2 reveal text-center">
                 <img src="https://joy.org.tw/upload/paper/584/584_003.jpg" 
                      onerror="this.src='https://images.unsplash.com/photo-1543332164-6e82f355badc?auto=format&fit=crop&w=800&q=80'" 
                      alt="喜樂的小孩插畫" class="img-decoration max-w-sm mx-auto transform -rotate-3">
-                <p class="text-xs text-slate-400 mt-2 italic">若圖片未顯示，請確認網路連接</p>
             </div>
         </div>
     </section>
@@ -205,8 +206,6 @@
     <section id="section2" class="slide">
         <div class="container mx-auto text-center px-6">
             <h2 class="text-4xl text-orange-800 mb-10 pious-font reveal">貳、住棚節的真保障</h2>
-            <p class="mb-12 text-slate-600 max-w-2xl mx-auto reveal">在歲末收成最豐裕之際，神卻要求百姓住進脆弱的帳棚，這是一個信仰的「重置」。</p>
-            
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="reveal">
                     <img src="https://joy.org.tw/upload/paper/584/584_002.jpg" 
@@ -218,11 +217,11 @@
                         <div class="card-inner w-full h-full">
                             <div class="card-front bg-orange-100 p-8 rounded-2xl flex flex-col justify-center items-center shadow-md">
                                 <span class="text-5xl mb-4">🏠</span>
-                                <p class="text-xl font-bold text-orange-800">點擊探索：真正的保障在哪裡？</p>
+                                <p class="text-xl font-bold text-orange-800">真正的保障在哪裡？</p>
                             </div>
                             <div class="card-back bg-orange-600 p-8 rounded-2xl flex flex-col justify-center shadow-lg text-white">
-                                <p class="text-lg italic mb-4">「真正的喜樂不是源於自己倉房裡收藏了多少，而是來自那位賜下秋雨、春雨，掌管一切的神。」</p>
-                                <p class="text-sm opacity-80">— 趙信祈《住棚節的真喜樂》</p>
+                                <p class="text-lg italic">「真正的喜樂不是源於倉房裡收藏了多少，而是來自那位掌管一切的神。」</p>
+                                <p class="text-sm opacity-80 mt-4">— 趙信祈《住棚節的真喜樂》</p>
                             </div>
                         </div>
                     </div>
@@ -238,67 +237,29 @@
                 <div class="md:w-1/2 reveal">
                     <h2 class="text-4xl text-orange-800 mb-8 pious-font">參、像孩子一樣喜樂</h2>
                     <div class="highlight-box bg-white">
-                        <p class="text-xl">
-                            「孩子在獨木橋上敢於閉眼，並非覺得自己強大，而是深信父親的膀臂將是免於危險的最大倚靠。」
-                        </p>
+                        <p class="text-xl">「孩子在獨木橋上敢於閉眼，是因為深信父親的膀臂將是免於危險的最大倚靠。」</p>
                     </div>
-                    <ul class="space-y-4 mt-6 text-slate-600">
-                        <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-400 flex items-center justify-center text-white text-xs">✓</span> 不需偽裝堅強，承認自己有限</li>
-                        <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-400 flex items-center justify-center text-white text-xs">✓</span> 信仰真正的力量是「知道自己被主愛著」</li>
-                        <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-400 flex items-center justify-center text-white text-xs">✓</span> 斷過奶的孩子在他母親懷中的平靜</li>
-                    </ul>
+                    <p class="mt-6 text-slate-600 italic">信仰真正的力量，不是讓自己變強，而是知道自己被主愛著。</p>
                 </div>
                 <div class="md:w-1/2 reveal">
                     <img src="https://joy.org.tw/upload/paper/584/584_004.jpg" 
                          onerror="this.src='https://images.unsplash.com/photo-1473679408190-0693dd22fe6a?auto=format&fit=crop&w=800&q=80'" 
-                         alt="擁抱大蘋果的小孩" class="img-decoration w-full max-w-sm mx-auto shadow-2xl">
+                         alt="擁抱大蘋果的小孩" class="img-decoration w-full max-w-sm mx-auto">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Slide 6: 超越情緒 -->
-    <section class="slide">
-        <div class="container mx-auto max-w-4xl px-6 text-center">
-            <h2 class="text-4xl text-orange-800 mb-12 pious-font reveal">肆、憂傷中會喜樂嗎？</h2>
-            <div class="relative py-10 reveal">
-                <div class="absolute top-0 left-1/2 -translate-x-1/2 text-9xl text-orange-100 -z-10 pious-font">Joy</div>
-                <div class="bg-white p-10 rounded-3xl shadow-xl border border-orange-50 relative overflow-hidden">
-                    <p class="text-2xl leading-relaxed text-slate-700 italic pious-font mb-6">
-                        「當我們只為那一位『唯一的觀眾(Audience of One)』而活時，人的評價與社會標籤就不會再動搖我們。這種向神而活的自由，成了我們最穩固的底氣。」
-                    </p>
-                    <p class="text-slate-500">— NZ小恩《談超越情緒的信仰》</p>
-                    
-                    <div class="mt-8 border-t pt-6">
-                        <button class="text-orange-600 font-bold hover:underline" onclick="toggleDefense()">點擊查看：什麼是聖靈的「保守」？</button>
-                        <div id="defense-info" class="hidden mt-4 p-4 bg-orange-50 rounded-xl text-slate-600 animate-pulse">
-                            「保守」是一個軍事用語，意為「設立駐軍防衛」。聖靈的平安就像天上的精銳部隊，駐紮在靈魂深處，防衛著我們的心！
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Slide 7: 結語 -->
+    <!-- Slide 6: 結語 -->
     <section class="slide bg-slate-900 text-white text-center">
         <div class="container mx-auto px-6 reveal">
             <h2 class="text-5xl mb-8 pious-font">背起歡呼的十字架</h2>
-            <p class="text-xl mb-12 opacity-80 max-w-2xl mx-auto">
-                主耶穌從未應許天色常藍，但在末後，我們領受了聖靈。這份喜樂不再受世上的豐歉所左右。
-            </p>
-            <div class="flex flex-col md:flex-row justify-center gap-6 items-center">
-                <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                    <p class="text-orange-400 font-bold text-2xl">要常常喜樂</p>
-                </div>
-                <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                    <p class="text-orange-400 font-bold text-2xl">不住的禱告</p>
-                </div>
-                <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                    <p class="text-orange-400 font-bold text-2xl">凡事謝恩</p>
-                </div>
+            <div class="flex flex-col md:flex-row justify-center gap-6 mt-10">
+                <div class="bg-white/10 p-6 rounded-2xl">常常喜樂</div>
+                <div class="bg-white/10 p-6 rounded-2xl">不住禱告</div>
+                <div class="bg-white/10 p-6 rounded-2xl">凡事謝恩</div>
             </div>
-            <p class="mt-20 text-sm opacity-40">真耶穌教會 聖靈月刊 584 期 | 主題：靠主常常喜樂</p>
+            <p class="mt-20 text-sm opacity-40">真耶穌教會 聖靈月刊 584 期</p>
         </div>
     </section>
 
@@ -306,18 +267,68 @@
         // 滾動顯示動畫
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
+                if (entry.isIntersecting) entry.target.classList.add('active');
             });
         }, { threshold: 0.1 });
-
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-        // 互動驚喜切換
         function toggleDefense() {
             const info = document.getElementById('defense-info');
             info.classList.toggle('hidden');
+        }
+
+        // --- PPT 匯出邏輯 ---
+        function exportToPPT() {
+            let pptx = new PptxGenJS();
+            pptx.layout = 'LAYOUT_WIDE';
+            
+            const beige = "FFFAF0";
+            const orange = "E67E22";
+            const brown = "8B4513";
+
+            // Slide 1: Cover
+            let s1 = pptx.addSlide();
+            s1.background = { fill: "FFFFFF" };
+            s1.addText("靠主常常喜樂", { x: 0.5, y: 1.5, w: "50%", fontSize: 48, bold: true, color: brown });
+            s1.addText("聖靈月刊 VOL. 584", { x: 0.5, y: 2.8, w: "50%", fontSize: 20, color: orange });
+            s1.addText("「喜樂不只是一種情緒，更是基督徒當盡的本分。」", { x: 0.5, y: 4.0, w: "50%", fontSize: 18, italic: true });
+            s1.addImage({ path: "https://joy.org.tw/upload/paper/584/584_001.jpg", x: 6.0, y: 0.5, w: 3.5, h: 4.5 });
+
+            // Slide 2: Happiness vs Joy
+            let s2 = pptx.addSlide();
+            s2.background = { fill: beige };
+            s2.addText("從「快樂」到「喜樂」的昇華", { x: 0.5, y: 0.5, fontSize: 32, bold: true, color: brown });
+            s2.addText("快樂 Happiness", { x: 0.5, y: 1.5, fontSize: 24, bold: true, color: "333333" });
+            s2.addText("取決於外在環境。當生活順遂時感到痛快，但極其短暫且脆弱。", { x: 0.5, y: 2.0, w: "40%", fontSize: 18 });
+            s2.addText("喜樂 Joy", { x: 5.5, y: 1.5, fontSize: 24, bold: true, color: orange });
+            s2.addText("源於神「恩典」。深植於內在的屬靈力量，是源源不絕的生命力。", { x: 5.5, y: 2.0, w: "40%", fontSize: 18 });
+
+            // Slide 3: Perspective
+            let s3 = pptx.addSlide();
+            s3.addText("壹、喜樂的視角：戴上廣角鏡", { x: 0.5, y: 0.5, fontSize: 32, bold: true, color: brown });
+            s3.addText("保羅戴上了屬靈的『廣角鏡』。他看見下監的目的，是為了向羅馬最精銳的『御營全軍』傳福音！", { x: 0.5, y: 1.5, w: "50%", fontSize: 20, italic: true });
+            s3.addImage({ path: "https://joy.org.tw/upload/paper/584/584_003.jpg", x: 6.0, y: 1.0, w: 3.5, h: 3.5 });
+
+            // Slide 4: Tabernacles
+            let s4 = pptx.addSlide();
+            s4.addText("貳、住棚節的真保障", { x: 0.5, y: 0.5, fontSize: 32, bold: true, color: brown });
+            s4.addImage({ path: "https://joy.org.tw/upload/paper/584/584_002.jpg", x: 0.5, y: 1.2, w: 4.0, h: 4.0 });
+            s4.addText("「真正的喜樂不是源於倉房裡收藏了多少，而是來自那位掌管一切的神。」", { x: 5.0, y: 2.5, w: "45%", fontSize: 22, italic: true, color: orange });
+
+            // Slide 5: Child-like
+            let s5 = pptx.addSlide();
+            s5.background = { fill: beige };
+            s5.addText("參、像孩子一樣喜樂", { x: 0.5, y: 0.5, fontSize: 32, bold: true, color: brown });
+            s5.addText("「孩子在獨木橋上敢於閉眼，是因為深信父親的膀臂將是免於危險的最大倚靠。」", { x: 0.5, y: 1.5, w: "50%", fontSize: 20 });
+            s5.addImage({ path: "https://joy.org.tw/upload/paper/584/584_004.jpg", x: 6.0, y: 1.0, w: 3.5, h: 4.0 });
+
+            // Slide 6: Conclusion
+            let s6 = pptx.addSlide();
+            s6.background = { fill: "333333" };
+            s6.addText("背起歡呼的十字架", { x: 0, y: 2.0, w: "100%", fontSize: 44, bold: true, color: "FFFFFF", align: "center" });
+            s6.addText("常常喜樂 | 不住禱告 | 凡事謝恩", { x: 0, y: 3.5, w: "100%", fontSize: 24, color: orange, align: "center" });
+
+            pptx.writeFile({ fileName: "常常喜樂_證道簡報.pptx" });
         }
     </script>
 </body>
