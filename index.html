@@ -3,234 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TJC 西區公關組 - 數位名片系統</title>
-    
-    <!-- 1. 載入 Tailwind CSS -->
+    <title>常常喜樂 - 聖靈月刊 584 期證道專題</title>
+    <!-- 引入字體：思源宋體呈現敬虔感 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. 載入 React 核心 (使用 cdnjs 提高連線速度) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- 3. 載入 Babel (解析 JSX) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    
-    <!-- 4. 載入 Lucide 圖示庫 -->
-    <script src="https://unpkg.com/lucide-react@latest"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f1f5f9; margin: 0; }
-        
-        .perspective-1000 { perspective: 1000px; }
-        .preserve-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        .rendering-pixelated { image-rendering: pixelated; }
+        :root {
+            --joy-orange: #e67e22;
+            --joy-green: #27ae60;
+            --joy-brown: #8b4513;
+            --joy-beige: #fffaf0;
+        }
 
-        /* 啟動動畫樣式 */
-        #launch-loader {
-            position: fixed; inset: 0; background: #ffffff;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000; transition: opacity 0.5s ease-out;
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--joy-beige);
+            color: #333;
+            overflow-x: hidden;
         }
-        .spinner { 
-            width: 50px; height: 50px; 
-            border: 5px solid #f3f4f6; 
-            border-top: 5px solid #4f46e5; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
+
+        h1, h2, .pious-font {
+            font-family: 'Noto Serif TC', serif;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* 避免在解析完成前看到原始代碼 */
-        [script-type="text/babel"] { display: none; }
+
+        /* 滾動動畫效果 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 模擬 PPT 的每一頁 */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* 引言區塊樣式 */
+        .highlight-box {
+            border-left: 6px solid var(--joy-orange);
+            background: rgba(230, 126, 34, 0.05);
+            padding: 1.5rem 2rem;
+            margin: 1.5rem 0;
+            border-radius: 0 1rem 1rem 0;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* 互動驚喜：點擊卡片翻轉 */
+        .surprise-card {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .surprise-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* 懸浮效果 */
+        .hover-lift {
+            transition: transform 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-10px);
+        }
+
+        /* 自定義按鈕 */
+        .joy-btn {
+            background-color: var(--joy-orange);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+        }
+        .joy-btn:hover {
+            background-color: var(--joy-brown);
+            transform: scale(1.05);
+        }
+
+        /* 圖片網格裝飾 */
+        .img-decoration {
+            border: 8px solid white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 1rem;
+        }
     </style>
 </head>
 <body>
-    <!-- 初始載入層 -->
-    <div id="launch-loader">
-        <div class="spinner"></div>
-        <p class="mt-4 text-slate-500 text-sm font-black tracking-widest uppercase">系統啟動中...</p>
-        <p id="timeout-msg" class="mt-2 text-red-400 text-[10px] hidden font-bold">若載入過久，請檢查網路或重新整理頁面</p>
+
+    <!-- 導航指示 -->
+    <div class="fixed right-5 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
+        <div class="w-3 h-3 rounded-full bg-orange-400 opacity-50 cursor-pointer hover:opacity-100" onclick="window.scrollTo(0, 0)"></div>
+        <div class="w-3 h-3 rounded-full bg-orange-400 opacity-50 cursor-pointer hover:opacity-100" onclick="document.getElementById('intro').scrollIntoView()"></div>
+        <div class="w-3 h-3 rounded-full bg-orange-400 opacity-50 cursor-pointer hover:opacity-100" onclick="document.getElementById('section1').scrollIntoView()"></div>
+        <div class="w-3 h-3 rounded-full bg-orange-400 opacity-50 cursor-pointer hover:opacity-100" onclick="document.getElementById('section2').scrollIntoView()"></div>
+        <div class="w-3 h-3 rounded-full bg-orange-400 opacity-50 cursor-pointer hover:opacity-100" onclick="document.getElementById('section3').scrollIntoView()"></div>
     </div>
 
-    <div id="root"></div>
+    <!-- Slide 1: 封面 -->
+    <section class="slide bg-white overflow-hidden">
+        <div class="container mx-auto flex flex-col lg:flex-row items-center gap-10">
+            <div class="lg:w-1/2 text-center lg:text-left z-10 px-6">
+                <p class="text-orange-600 font-bold tracking-widest mb-4">聖靈月刊 VOL. 584</p>
+                <h1 class="text-6xl lg:text-8xl font-bold text-slate-800 mb-6">靠主常常喜樂</h1>
+                <p class="text-xl text-slate-600 mb-8 pious-font italic">「喜樂不只是一種情緒，更是基督徒當盡的本分。」</p>
+                <button class="joy-btn" onclick="document.getElementById('intro').scrollIntoView({behavior:'smooth'})">開始證道之旅</button>
+            </div>
+            <div class="lg:w-1/2 relative">
+                <!-- 封面圖：小孩與蘋果 -->
+                <img src="https://joy.org.tw/upload/paper/584/584_001.jpg" alt="584期封面" class="img-decoration w-full max-w-md mx-auto transform rotate-2">
+                <div class="absolute -bottom-5 -right-5 w-32 h-32 bg-orange-200 rounded-full -z-10 opacity-50"></div>
+            </div>
+        </div>
+    </section>
 
-    <!-- 自動超時檢測 -->
-    <script>
-        setTimeout(() => {
-            const msg = document.getElementById('timeout-msg');
-            if (msg) msg.classList.remove('hidden');
-        }, 8000);
-    </script>
+    <!-- Slide 2: 引言 (快樂 vs 喜樂) -->
+    <section id="intro" class="slide">
+        <div class="container mx-auto max-w-4xl px-6">
+            <h2 class="text-4xl text-center text-orange-800 mb-12 reveal">從「快樂」到「喜樂」的昇華</h2>
+            <div class="grid md:grid-cols-2 gap-10">
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover-lift reveal">
+                    <h3 class="text-2xl font-bold mb-4 text-slate-700 underline decoration-orange-400">快樂 Happiness</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        取決於「發生的事」(Happenings)。建立在物質與環境上的滿足感是極其短暫且脆弱的。
+                    </p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border-2 border-orange-200 hover-lift reveal">
+                    <h3 class="text-2xl font-bold mb-4 text-orange-700">喜樂 Joy</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        源於神「恩典」(Charis) 的澆灌。深植於內在的屬靈力量，在不可能喜樂的絕境中依然存在。
+                    </p>
+                </div>
+            </div>
+            <div class="highlight-box mt-10 reveal">
+                <p class="text-lg pious-font">「只要你選擇順服、選擇開口禱告與感謝，還超越理智的平安就會降臨。」</p>
+                <cite class="block text-right text-sm text-slate-400 mt-2">—— 節錄自月刊 P.2</cite>
+            </div>
+        </div>
+    </section>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        // 安全提取圖示，增加容錯
-        const getLucide = () => window.lucideReact || window.lucide || {};
-        const { 
-            ShieldCheck, RefreshCw, Globe, MessageCircle, 
-            User, Monitor, Navigation, ExternalLink, Shield 
-        } = getLucide();
+    <!-- Slide 3: 喜樂的神學 (保羅與廣角鏡) -->
+    <section id="section1" class="slide bg-slate-50">
+        <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 px-6">
+            <div class="md:w-1/2 reveal">
+                <h2 class="text-4xl text-orange-800 mb-8 pious-font">壹、喜樂的視角：戴上廣角鏡</h2>
+                <div class="highlight-box bg-white">
+                    <p class="text-xl italic leading-relaxed">
+                        「保羅戴上了屬靈的『廣角鏡』。從世人的角度看，傳道人被關是神沒有保護；但在保羅看來，目的是為了向羅馬最精銳的『御營全軍』傳福音！」
+                    </p>
+                    <cite class="block text-right mt-2">— 楊志豪《喜樂的神學》</cite>
+                </div>
+                <p class="mt-6 text-slate-600">
+                    抱怨一開口，喜樂就溜走；感恩一發聲，喜樂就降臨。當視角一改變，心情自然豁然開朗。
+                </p>
+            </div>
+            <div class="md:w-1/2 reveal">
+                <img src="https://joy.org.tw/upload/paper/584/584_003.jpg" alt="喜樂的小孩插畫" class="img-decoration max-w-sm mx-auto transform -rotate-3">
+            </div>
+        </div>
+    </section>
 
-        const App = () => {
-            const [isFlipped, setIsFlipped] = useState(false);
-
-            // 官方連結資料庫
-            const qrLinks = {
-                upload: "https://tjcdaxiinformation.github.io/TJC-West-History/",
-                leader: "https://line.me/ti/p/U3XGjc8GKN", 
-                ty: "https://line.me/ti/p/~tjcty_editor",  
-                hc: "https://line.me/ti/p/~tjchc_editor",  
-                tc: "https://line.me/ti/p/~tjctc_editor",  
-                nt: "https://line.me/ti/p/~tjcnt_editor"     
-            };
-
-            useEffect(() => {
-                // 渲染成功後關閉載入層
-                const loader = document.getElementById('launch-loader');
-                if (loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.style.display = 'none', 500);
-                }
-            }, []);
-
-            // QR Code 繪製組件
-            const QRCodeItem = ({ url, label, size = 80, isDark = false }) => {
-                const api = `https://api.qrserver.com/v1/create-qr-code/?size=${size*2}x${size*2}&data=${encodeURIComponent(url)}`;
-                return (
-                    <div className="flex flex-col items-center gap-1">
-                        <div className={`bg-white p-1 rounded-lg shadow-md border ${isDark ? 'border-indigo-800' : 'border-slate-100'} hover:scale-110 transition-transform duration-300`}>
-                            <img src={api} alt={label} style={{width: size, height: size}} className="rendering-pixelated" />
-                        </div>
-                        <p className={`text-[7px] font-black tracking-tighter ${isDark ? 'text-indigo-300' : 'text-slate-500'}`}>{label}</p>
-                    </div>
-                );
-            };
-
-            // 如果圖示加載失敗的後備渲染
-            const IconWrapper = ({ Component, size, className }) => {
-                return Component ? <Component size={size} className={className} /> : <div className={`bg-current rounded-sm ${className}`} style={{width: size, height: size, opacity: 0.2}} />;
-            };
-
-            return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
-                    
-                    <div className="mb-8 text-center animate-in fade-in duration-1000">
-                        <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full mb-3 border border-indigo-200">
-                           <IconWrapper Component={ShieldCheck} size={14} />
-                           <span className="text-[10px] font-black uppercase tracking-widest">數位名片系統正式版</span>
-                        </div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">西區公關組名片預覽</h1>
-                    </div>
-
-                    <div className="relative w-full max-w-[500px] h-[300px] perspective-1000">
-                        <div 
-                            onClick={() => setIsFlipped(!isFlipped)}
-                            className={`relative w-full h-full transition-all duration-700 preserve-3d cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}
-                        >
-                            {/* 正面 */}
-                            <div className="absolute inset-0 backface-hidden bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden">
-                                <div className="h-4 bg-slate-900 w-full flex items-center px-4 gap-1">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                                </div>
-                                <div className="p-8 flex flex-col h-full relative">
-                                    <div className="mb-6">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-tight mb-2">TJC台灣傳教百年西區音樂會籌備會公關宣傳組</p>
-                                        <h2 className="text-2xl font-black text-slate-900 tracking-tighter">西區教會傳教史數位典藏計畫</h2>
-                                        <div className="h-1.5 w-12 bg-amber-500 mt-2 rounded-full"></div>
-                                    </div>
-
-                                    <div className="flex flex-grow gap-8 items-center">
-                                        <div className="w-3/5">
-                                            <div className="rounded-2xl border-2 border-slate-50 shadow-xl overflow-hidden bg-slate-50 relative aspect-video">
-                                                <div className="absolute inset-0 p-2 flex flex-col">
-                                                    <div className="flex items-center gap-1 mb-1 border-b pb-1 border-slate-200">
-                                                        <IconWrapper Component={Globe} size={10} className="text-indigo-400" />
-                                                        <div className="h-1.5 w-24 bg-slate-200 rounded-full"></div>
-                                                    </div>
-                                                    <div className="flex-grow flex items-center justify-center opacity-10">
-                                                        <IconWrapper Component={Monitor} size={48} className="text-indigo-900" />
-                                                    </div>
-                                                </div>
-                                                <div className="absolute bottom-2 left-2 right-2 bg-indigo-950 p-2.5 rounded-xl shadow-lg flex items-center gap-2">
-                                                    <IconWrapper Component={ExternalLink} size={10} className="text-indigo-300" />
-                                                    <span className="text-[7px] text-white font-black truncate">TJC-West-History 數位典藏系統</span>
-                                                </div>
-                                            </div>
-                                            <p className="mt-3 text-[10px] font-bold text-slate-400 leading-relaxed italic">
-                                                掃描 QR Code 進入網頁上傳史料，共同見證百年恩典。
-                                            </p>
-                                        </div>
-                                        <div className="w-2/5 flex flex-col items-center justify-center border-l border-slate-100 pl-4">
-                                            <QRCodeItem url={qrLinks.upload} label="計畫網站" size={90} />
-                                            <div className="mt-3 bg-slate-900 px-4 py-1.5 rounded-xl text-white text-[8px] font-black uppercase tracking-widest shadow-lg">
-                                                Scan to Upload
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+    <!-- Slide 4: 住棚節 (驚喜效果) -->
+    <section id="section2" class="slide">
+        <div class="container mx-auto text-center px-6">
+            <h2 class="text-4xl text-orange-800 mb-10 pious-font reveal">貳、住棚節的真保障</h2>
+            <p class="mb-12 text-slate-600 max-w-2xl mx-auto reveal">在歲末收成最豐裕之際，神卻要求百姓住進脆弱的帳棚，這是一個信仰的「重置」。</p>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <img src="https://joy.org.tw/upload/paper/584/584_002.jpg" alt="住棚節插畫" class="img-decoration">
+                </div>
+                <div class="text-left reveal">
+                    <div class="surprise-card group w-full h-64" onclick="this.classList.toggle('flipped')">
+                        <div class="card-inner w-full h-full">
+                            <!-- 正面：點擊驚喜 -->
+                            <div class="card-front bg-orange-100 p-8 rounded-2xl flex flex-col justify-center items-center shadow-md">
+                                <span class="text-5xl mb-4">🏠</span>
+                                <p class="text-xl font-bold text-orange-800">點擊探索：真正的保障在哪裡？</p>
                             </div>
-
-                            {/* 背面 */}
-                            <div className="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-950 rounded-[2.5rem] shadow-2xl border border-indigo-900 flex flex-col text-white overflow-hidden">
-                                <div className="p-8 flex flex-col h-full">
-                                    <div className="flex justify-between items-center mb-8 bg-white/5 p-6 rounded-[2rem] border border-white/10 shadow-inner">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-xl border-2 border-white/20">
-                                                <IconWrapper Component={User} size={32} className="text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-bold text-indigo-300 tracking-[0.2em] uppercase mb-1">公關宣傳組 組長</p>
-                                                <h4 className="text-2xl font-black tracking-tight leading-none">王鴻志 <span className="text-xs font-normal opacity-30 ml-1 italic">Leader</span></h4>
-                                            </div>
-                                        </div>
-                                        <QRCodeItem url={qrLinks.leader} label="組長 LINE" size={55} isDark />
-                                    </div>
-
-                                    <div className="text-center mb-6 flex items-center justify-center gap-3">
-                                        <div className="h-px w-10 bg-indigo-800"></div>
-                                        <p className="text-[10px] font-black text-indigo-400 tracking-[0.3em] uppercase">各小區公關小編聯絡網</p>
-                                        <div className="h-px w-10 bg-indigo-800"></div>
-                                    </div>
-
-                                    <div className="grid grid-cols-4 gap-4 flex-grow items-center">
-                                        <QRCodeItem url={qrLinks.ty} label="桃園小區" size={48} isDark />
-                                        <QRCodeItem url={qrLinks.hc} label="新竹小區" size={48} isDark />
-                                        <QRCodeItem url={qrLinks.tc} label="台中小區" size={48} isDark />
-                                        <QRCodeItem url={qrLinks.nt} label="南投小區" size={48} isDark />
-                                    </div>
-
-                                    <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center opacity-30">
-                                        <p className="text-[7px] font-bold tracking-[0.2em] uppercase">© 2026 TJC WEST DISTRICT CENTENNIAL</p>
-                                        <IconWrapper Component={Shield} size={12} className="text-white" />
-                                    </div>
-                                </div>
+                            <!-- 背面：揭曉 -->
+                            <div class="card-back bg-orange-600 p-8 rounded-2xl flex flex-col justify-center shadow-lg text-white">
+                                <p class="text-lg italic mb-4">「真正的喜樂不是源於自己倉房裡收藏了多少，而是來自那位賜下秋雨、春雨，掌管一切的神。」</p>
+                                <p class="text-sm opacity-80">— 趙信祈《住棚節的真喜樂》</p>
                             </div>
                         </div>
-                    </div>
-
-                    <button 
-                        onClick={() => setIsFlipped(!isFlipped)}
-                        className="mt-12 flex items-center gap-3 bg-white text-indigo-900 px-10 py-4 rounded-full font-black shadow-2xl hover:bg-indigo-50 transition-all active:scale-95 border border-slate-200"
-                    >
-                        <IconWrapper Component={RefreshCw} size={20} className={isFlipped ? 'rotate-180 transition-transform duration-500' : ''} />
-                        翻轉名片面
-                    </button>
-
-                    <div className="mt-8 text-center text-slate-400 text-[10px] font-black tracking-widest uppercase animate-pulse">
-                        Click the card to flip
                     </div>
                 </div>
-            );
-        };
+            </div>
+        </div>
+    </section>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+    <!-- Slide 5: 像孩子一樣 (視覺互動) -->
+    <section id="section3" class="slide bg-orange-50/50">
+        <div class="container mx-auto max-w-5xl px-6">
+            <div class="flex flex-col md:flex-row-reverse items-center gap-10">
+                <div class="md:w-1/2 reveal">
+                    <h2 class="text-4xl text-orange-800 mb-8 pious-font">參、像孩子一樣喜樂</h2>
+                    <div class="highlight-box bg-white">
+                        <p class="text-xl">
+                            「孩子在獨木橋上敢於閉眼，並非覺得自己強大，而是深信父親的膀臂將是免於危險的最大倚靠。」
+                        </p>
+                    </div>
+                    <ul class="space-y-4 mt-6 text-slate-600">
+                        <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-400 flex items-center justify-center text-white text-xs">✓</span> 不需偽裝堅強，承認自己有限</li>
+                        <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-400 flex items-center justify-center text-white text-xs">✓</span> 信仰真正的力量是「知道自己被主愛著」</li>
+                        <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-400 flex items-center justify-center text-white text-xs">✓</span> 斷過奶的孩子在他母親懷中的平靜</li>
+                    </ul>
+                </div>
+                <div class="md:w-1/2 reveal">
+                    <img src="https://joy.org.tw/upload/paper/584/584_004.jpg" alt="擁抱大蘋果的小孩" class="img-decoration w-full max-w-sm mx-auto shadow-2xl">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: 超越情緒 (總結段落) -->
+    <section class="slide">
+        <div class="container mx-auto max-w-4xl px-6 text-center">
+            <h2 class="text-4xl text-orange-800 mb-12 pious-font reveal">肆、憂傷中會喜樂嗎？</h2>
+            <div class="relative py-10 reveal">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 text-9xl text-orange-100 -z-10 pious-font">Joy</div>
+                <div class="bg-white p-10 rounded-3xl shadow-xl border border-orange-50 relative overflow-hidden">
+                    <p class="text-2xl leading-relaxed text-slate-700 italic pious-font mb-6">
+                        「當我們只為那一位『唯一的觀眾(Audience of One)』而活時，人的評價與社會標籤就不會再動搖我們。這種向神而活的自由，成了我們最穩固的底氣。」
+                    </p>
+                    <p class="text-slate-500">— NZ小恩《談超越情緒的信仰》</p>
+                    
+                    <!-- 互動點擊驚喜：駐軍防衛 -->
+                    <div class="mt-8 border-t pt-6">
+                        <button class="text-orange-600 font-bold hover:underline" onclick="toggleDefense()">點擊查看：什麼是聖靈的「保守」？</button>
+                        <div id="defense-info" class="hidden mt-4 p-4 bg-orange-50 rounded-xl text-slate-600 animate-pulse">
+                            「保守」是一個軍事用語，意為「設立駐軍防衛」。聖靈的平安就像天上的精銳部隊，駐紮在靈魂深處，防衛著我們的心！
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: 結語 -->
+    <section class="slide bg-slate-900 text-white text-center">
+        <div class="container mx-auto px-6 reveal">
+            <h2 class="text-5xl mb-8 pious-font">背起歡呼的十字架</h2>
+            <p class="text-xl mb-12 opacity-80 max-w-2xl mx-auto">
+                主耶穌從未應許天色常藍，但在末後，我們領受了聖靈。這份喜樂不再受世上的豐歉所左右。
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-6 items-center">
+                <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
+                    <p class="text-orange-400 font-bold text-2xl">要常常喜樂</p>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
+                    <p class="text-orange-400 font-bold text-2xl">不住的禱告</p>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
+                    <p class="text-orange-400 font-bold text-2xl">凡事謝恩</p>
+                </div>
+            </div>
+            <p class="mt-20 text-sm opacity-40">真耶穌教會 聖靈月刊 584 期 | 主題：靠主常常喜樂</p>
+        </div>
+    </section>
+
+    <script>
+        // 滾動顯示動畫
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 互動驚喜切換
+        function toggleDefense() {
+            const info = document.getElementById('defense-info');
+            info.classList.toggle('hidden');
+        }
     </script>
 </body>
 </html>
+
+```
